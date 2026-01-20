@@ -20,6 +20,7 @@ public class PlayerHealth : NetworkBehaviour
 
         if (isOwner)
         {
+            InstanceHandler.GetInstance<MainGameView>().UpdateHealthDisplay(Health);
             health.onChanged += OnHealthChanged;
         }
     }

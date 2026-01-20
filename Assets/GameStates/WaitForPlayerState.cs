@@ -10,6 +10,9 @@ public class WaitForPlayerState : StateNode
     {
         base.Enter(asServer);
         
+        if (!asServer)
+            return;
+        
         StartCoroutine(WaitForPlayers());
     }
 
