@@ -12,16 +12,20 @@ public class PlayerSpawningState : StateNode
     {
         base.Enter(asServer);
 
-        Debug.Log($"[PlayerSpawningState] Enter called - asServer: {asServer}");
         if (!asServer)
-        {
-            Debug.Log("[PlayerSpawningState] Skipping - not server");
             return;
-        }
 
+        DespawnPlayers();
+
+        var spawnedPlayers = SpawnPlayers();
+
+        machine.Next(spawnedPlayers);
+    }
+    
+    private List<PlayerHealth> SpawnPlayers()
+    {
         var spawnedPlayers = new List<PlayerHealth>();
         
-        Debug.Log($"[PlayerSpawningState] Spawning {networkManager.players.Count} players");
         int currentSpawnIndex = 0;
         foreach (var player in networkManager.players)
         {
@@ -32,16 +36,18 @@ public class PlayerSpawningState : StateNode
             
             currentSpawnIndex = (currentSpawnIndex + 1) % spawnPoints.Count;
         }
-        
-        Debug.Log("[PlayerSpawningState] Players spawned, calling machine.Next()");
 
-        machine.Next(spawnedPlayers);
+        return spawnedPlayers;
     }
-
-    public override void Exit(bool asServer)
+    
+    private void DespawnPlayers()
     {
-        base.Exit(asServer);
-        
-        //Debug.Log($"[PlayerSpawningState] Exit called - asServer: {asServer}");
+        var allPlayers = FindObjectsByType<PlayerHealth>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        foreach (var player in allPlayers)
+        {
+            Destroy(player.gameObject);
+        }
     }
+
 }

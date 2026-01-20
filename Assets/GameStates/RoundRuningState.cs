@@ -28,6 +28,7 @@ public class RoundRuningState : StateNode<List<PlayerHealth>>
         if (_playersAlive <= 1)
         {
             Debug.Log($"Someone won the round!");
+            machine.Next();
         }
     }
 }

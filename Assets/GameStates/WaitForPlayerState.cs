@@ -20,9 +20,4 @@ public class WaitForPlayerState : StateNode
         
         machine.Next();
     }
-    
-    public override void Exit(bool asServer)
-    {
-        
-    }
 }
