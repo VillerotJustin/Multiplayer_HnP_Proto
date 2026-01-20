@@ -194,6 +194,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1067ce4a7f62a2149b3351b6c8610a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
+  _isSetup: 0
+  _prefabId: -2147483648
+  _componentIndex: -2147483648
+  _shouldBePooled: 0
+  _parent: {fileID: 0}
+  _invertedPathToNearestParent: 
+  _directChildren: []
+  minPlayers: 2
 --- !u!1 &262131783
 GameObject:
   m_ObjectHideFlags: 0
@@ -473,6 +483,7 @@ MonoBehaviour:
   _directChildren: []
   _ownerAuth: 0
   _states:
+  - {fileID: 93783308}
   - {fileID: 1804146685}
 --- !u!4 &681996558
 Transform:
