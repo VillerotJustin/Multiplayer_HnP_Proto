@@ -4,18 +4,16 @@ using UnityEngine;
 
 public class PlayerSpawningState : StateNode
 {
-    [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private PlayerHealth playerPrefab;
     [SerializeField] private List<Transform> spawnPoints = new();
-
-
-    public override void Enter()
+    public override void Enter(bool asServer)
     {
         base.Enter(asServer);
 
         if (!asServer) return;
 
         int currentSpawnIndex = 0;
-        foreach (var player in NetworkManager.Instance.players)
+        foreach (var player in networkManager.players)
         {
             var spawnPoint = spawnPoints[currentSpawnIndex];
             var newPlayer = Instantiate(playerPrefab, spawnPoint.position, spawnPoint.rotation);
@@ -27,7 +25,7 @@ public class PlayerSpawningState : StateNode
         machine.Next();
     }
 
-    public override void Exit()
+    public override void Exit(bool asServer)
     {
         base.Exit(asServer);
 
