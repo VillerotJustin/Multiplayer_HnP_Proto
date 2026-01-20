@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using PurrNet;
 using UnityEngine;
 
@@ -18,6 +19,8 @@ public class PlayerController : NetworkBehaviour
 
     [Header("References")]
     [SerializeField] private Camera playerCamera;
+    [SerializeField] private NetworkAnimator playerAnimator;
+    [SerializeField] private List<Renderer> renderersToHide = new();
     
     private CharacterController characterController;
     private Vector3 velocity;
@@ -29,8 +32,23 @@ public class PlayerController : NetworkBehaviour
 
         enabled = isOwner;
 
-        if (!isOwner)
+        if (!isOwner) {
             Destroy(playerCamera.gameObject);
+            
+            // Change color of non-owned players for better visibility
+            foreach (var renderer in renderersToHide)
+            {
+                renderer.material.color = Color.HSVToRGB(UnityEngine.Random.Range(0f, 1f), 0.8f, 0.9f);
+            }
+        }
+
+        if (isOwner)
+        {
+            foreach (var renderer in renderersToHide)
+            {
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly;
+            }
+        }
     }
 
     private void OnDisable()
@@ -82,6 +100,15 @@ public class PlayerController : NetworkBehaviour
 
         velocity.y += gravity * Time.deltaTime;
         characterController.Move(velocity * Time.deltaTime);
+
+        // Update animator parameters
+        if (playerAnimator != null)
+        {
+            // Debug.Log(playerAnimator.GetFloat("Forward"));
+            playerAnimator.SetFloat("Forward", vertical);
+            // Debug.Log(playerAnimator.GetFloat("Sideways"));
+            playerAnimator.SetFloat("Sideways", horizontal);
+        }
     }
 
     private void HandleRotation()
