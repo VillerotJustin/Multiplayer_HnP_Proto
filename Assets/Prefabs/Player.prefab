@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8217545026888310513}
   - component: {fileID: 388926658666019863}
-  - component: {fileID: 7203172034326320980}
+  - component: {fileID: 2559435700968569174}
   - component: {fileID: 3653715586755268530}
   m_Layer: 0
   m_Name: Main Camera
@@ -85,7 +85,7 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!81 &7203172034326320980
+--- !u!81 &2559435700968569174
 AudioListener:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -408,6 +408,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 183
   range: 20
+  damage: 10
 --- !u!1 &6366281141981513110
 GameObject:
   m_ObjectHideFlags: 0

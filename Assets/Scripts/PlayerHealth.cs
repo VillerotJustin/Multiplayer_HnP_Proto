@@ -7,6 +7,8 @@ public class PlayerHealth : NetworkBehaviour
     [SerializeField] private SyncVar<int> health = new(100);
     [SerializeField] private int selfLayer, otherLayer;
 
+    public Action<PlayerHealth> OnDeath_server;
+        
     public int Health => health.value;
 
     protected override void OnSpawned()
@@ -58,6 +60,7 @@ public class PlayerHealth : NetworkBehaviour
         {
             // Handle player death (e.g., respawn, game over, etc.)
             Debug.Log($"Player {owner?.id} has died.");
+            OnDeath_server?.Invoke(this);
             Destroy(gameObject);
         }
     }

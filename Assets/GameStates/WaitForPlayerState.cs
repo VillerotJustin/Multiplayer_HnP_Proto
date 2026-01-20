@@ -9,15 +9,20 @@ public class WaitForPlayerState : StateNode
     public override void Enter(bool asServer)
     {
         base.Enter(asServer);
-
+        
         StartCoroutine(WaitForPlayers());
     }
 
     private IEnumerator WaitForPlayers()
     {
-        while (networkManager.players.Count < minPlayers)
+        while (networkManager?.playerCount < minPlayers)
             yield return null;
         
         machine.Next();
+    }
+    
+    public override void Exit(bool asServer)
+    {
+        
     }
 }
