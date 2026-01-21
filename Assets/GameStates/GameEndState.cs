@@ -4,24 +4,27 @@ using PurrNet;
 using PurrNet.StateMachine;
 using UnityEngine;
 
-public class GameEndState : StateNode<Dictionary<PlayerID, int>>
+public class GameEndState : StateNode
 {
-    public override void Enter(Dictionary<PlayerID, int> RoundWins, bool asServer)
+    public override void Enter(bool asServer)
     {
         base.Enter(asServer);
         
         if (!asServer)
             return;
-
-        var winner = RoundWins.First();
-
-        foreach (var player in RoundWins)
+        
+        if (!InstanceHandler.TryGetInstance(out ScoreManager scoreManager))
         {
-            if (player.Value > winner.Value)
-                winner = player;
+            Debug.LogWarning("No ScoreManager found");
+            return;
         }
         
-        
+        var winner = scoreManager.GetWinner();
+        if (winner == default)
+        {
+            Debug.LogWarning("No winner found");
+            return;
+        }
         Debug.Log($"Game Game has now Ended \n Winner: {winner}");  
     }
 }

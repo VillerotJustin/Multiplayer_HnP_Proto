@@ -56,13 +56,18 @@ public class PlayerHealth : NetworkBehaviour
     }
 
     [ServerRpc(requireOwnership:false)]
-    public void ChangeHealth(int amount)
+    public void ChangeHealth(int amount, RPCInfo info = default)
     {
         health.value += amount;
 
         if (health.value <= 0)
         {
-            // Handle player death (e.g., respawn, game over, etc.)
+            if (InstanceHandler.TryGetInstance(out ScoreManager scoreManager))
+            {
+                scoreManager.AddKill(info.sender);
+                if (owner.HasValue)
+                    scoreManager.AddDeath(owner.Value);
+            }
             Debug.Log($"Player {owner?.id} has died.");
             OnDeath_server?.Invoke(owner.Value);
             Destroy(gameObject);

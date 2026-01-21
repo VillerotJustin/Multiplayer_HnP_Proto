@@ -5,15 +5,13 @@ using PurrNet.StateMachine;
 using UnityEngine;
 using UnityEngine.Serialization;
 
-public class RoundEndState : StateNode<PlayerID>
+public class RoundEndState : StateNode
 {
     [SerializeField] private int amountOfRounds = 3;
     [SerializeField] private StateNode spawningState;
 
     private int _roundCount = 0;
     private WaitForSeconds _delay = new(3f); // Time to wait
-
-    private Dictionary<PlayerID, int> _roundWins = new();
 
     public override void Enter(bool asServer)
     {
@@ -22,24 +20,6 @@ public class RoundEndState : StateNode<PlayerID>
         if (!asServer)
             return;
         
-        Debug.Log("Round has ended with no winner!");
-        
-        CheckForGameEnd();
-    }
-
-    public override void Enter(PlayerID winner, bool asServer)
-    {
-        base.Enter(asServer);
-        
-        if (!asServer)
-            return;
-
-        if (!_roundWins.ContainsKey(winner))
-            _roundWins.Add(winner, 0);
-        
-        _roundWins[winner]++;
-        Debug.Log($"{winner} won");
-
         CheckForGameEnd();
     }
 
@@ -48,7 +28,7 @@ public class RoundEndState : StateNode<PlayerID>
         _roundCount++;
         if (_roundCount >= amountOfRounds)
         {
-            machine.Next(_roundWins);
+            machine.Next();
             return;
         }
         

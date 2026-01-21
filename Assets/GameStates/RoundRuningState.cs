@@ -29,13 +29,7 @@ public class RoundRuningState : StateNode<List<PlayerHealth>>
 
         if (_players.Count <= 1)
         {
-            Debug.Log($"Someone won the round!");
-            if (_players.Count == 1)
-                machine.Next(_players[0]);
-            else
-                machine.Next();
-            
-            
+            machine.Next();
         }
     }
 }
