@@ -1,74 +1,76 @@
-using System;
 using PurrNet;
 using UnityEngine;
 
-public class GameViewManager : MonoBehaviour
+namespace UI
 {
-    [SerializeField] private GameView[] gameViews;
-    [SerializeField] private GameView defaultView;
-
-    private void Awake()
+    public class GameViewManager : MonoBehaviour
     {
-        InstanceHandler.RegisterInstance(this);
-        
-        foreach (var view in gameViews)
+        [SerializeField] private GameView[] gameViews;
+        [SerializeField] private GameView defaultView;
+
+        private void Awake()
         {
-            HideViewInternal(view);
+            InstanceHandler.RegisterInstance(this);
+        
+            foreach (var view in gameViews)
+            {
+                HideViewInternal(view);
+            }
+
+            ShowViewInternal(defaultView);
         }
 
-        ShowViewInternal(defaultView);
-    }
-
-    private void OnDestroy()
-    {
-        InstanceHandler.UnregisterInstance<GameViewManager>();
-    }
-
-    public void ShowView<T>(bool hideOthers = true) where T : GameView
-    {
-        foreach (var view in gameViews)
+        private void OnDestroy()
         {
-            if (view is T)
+            InstanceHandler.UnregisterInstance<GameViewManager>();
+        }
+
+        public void ShowView<T>(bool hideOthers = true) where T : GameView
+        {
+            foreach (var view in gameViews)
             {
-                ShowViewInternal(view);
+                if (view is T)
+                {
+                    ShowViewInternal(view);
+                }
+                else
+                {
+                    if (hideOthers) {
+                        HideViewInternal(view);
+                    }
+                }
             }
-            else
+        }
+
+        public void HideView<T>() where T : GameView
+        {
+            foreach (var view in gameViews)
             {
-                if (hideOthers) {
+                if (view is T)
+                {
                     HideViewInternal(view);
                 }
             }
         }
-    }
 
-    public void HideView<T>() where T : GameView
-    {
-        foreach (var view in gameViews)
+        private void ShowViewInternal(GameView view)
         {
-            if (view is T)
-            {
-                HideViewInternal(view);
-            }
+            view.canvasGroup.alpha = 1f;
+            view.OnShow();
+        }
+
+        private void HideViewInternal(GameView view)
+        {
+            view.canvasGroup.alpha = 0f;
+            view.OnHide();
         }
     }
 
-    private void ShowViewInternal(GameView view)
+    public abstract class GameView : MonoBehaviour
     {
-        view.canvasGroup.alpha = 1f;
-        view.OnShow();
+        public CanvasGroup canvasGroup;
+
+        public abstract void OnShow();
+        public abstract void OnHide();
     }
-
-    private void HideViewInternal(GameView view)
-    {
-        view.canvasGroup.alpha = 0f;
-        view.OnHide();
-    }
-}
-
-public abstract class GameView : MonoBehaviour
-{
-    public CanvasGroup canvasGroup;
-
-    public abstract void OnShow();
-    public abstract void OnHide();
 }

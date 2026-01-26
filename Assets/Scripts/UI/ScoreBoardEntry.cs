@@ -1,14 +1,17 @@
 using TMPro;
 using UnityEngine;
 
-public class ScoreBoardEntry : MonoBehaviour
+namespace UI
 {
-    [SerializeField] private TMP_Text nameText, killsText, deathsText;
-
-    public void SetData(string playerName, int kills, int deaths)
+    public class ScoreBoardEntry : MonoBehaviour
     {
-        nameText.text = playerName;
-        killsText.text = kills.ToString();
-        deathsText.text = deaths.ToString();
+        [SerializeField] private TMP_Text nameText, killsText, deathsText;
+
+        public void SetData(string playerName, int kills, int deaths)
+        {
+            nameText.text = playerName;
+            killsText.text = kills.ToString();
+            deathsText.text = deaths.ToString();
+        }
     }
 }

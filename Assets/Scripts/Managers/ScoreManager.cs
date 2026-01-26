@@ -1,5 +1,6 @@
 using System;
 using PurrNet;
+using UI;
 using UnityEngine;
 
 public class ScoreManager : NetworkBehaviour

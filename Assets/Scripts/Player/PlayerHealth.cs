@@ -1,5 +1,6 @@
 using System;
 using PurrNet;
+using UI;
 using UnityEngine;
 
 public class PlayerHealth : NetworkBehaviour
@@ -36,6 +37,17 @@ public class PlayerHealth : NetworkBehaviour
         OnDeath_server = null;
     }
 
+    /**
+     * @brief Updates the health display on the UI when the player's health changes
+     * 
+     * This callback is triggered when the health SyncVar changes. It retrieves the
+     * MainGameView instance and updates the health display with the new value.
+     * Only executed on the owner's client.
+     * 
+     * @param newValue The new health value to display on the UI
+     * 
+     * @return void
+     */
     private void OnHealthChanged(int newValue)
     {
         var mainGameView = InstanceHandler.GetInstance<MainGameView>();
@@ -43,7 +55,7 @@ public class PlayerHealth : NetworkBehaviour
         {
             mainGameView.UpdateHealthDisplay(newValue);
         }
-    }    
+    }
 
     private void SetLayerRecursively(GameObject obj, int newLayer)
     {

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using PurrNet;
 using PurrNet.StateMachine;
+using UI;
 using UnityEngine;
 
 public class GameEndState : StateNode
@@ -25,6 +26,22 @@ public class GameEndState : StateNode
             Debug.LogWarning("No winner found");
             return;
         }
-        Debug.Log($"Game Game has now Ended \n Winner: {winner}");  
+        Debug.Log($"Game Game has now Ended \n Winner: {winner}");
+
+        if (!InstanceHandler.TryGetInstance(out EndGameView _endGameView))
+        {
+            Debug.LogWarning("No EndGameView found");
+            return;
+        }
+        
+        if (!InstanceHandler.TryGetInstance(out GameViewManager _gameViewManager))
+        {
+            Debug.LogWarning("No GameViewManager found");
+            return;
+        }
+        
+        _gameViewManager.ShowView<EndGameView>();
+        
+        _endGameView.SetWinner(winner);
     }
 }

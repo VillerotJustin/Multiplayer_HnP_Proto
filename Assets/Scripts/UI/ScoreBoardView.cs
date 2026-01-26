@@ -1,59 +1,61 @@
-using System;
 using System.Collections.Generic;
 using PurrNet;
 using UnityEngine;
 
-public class ScoreBoardView : GameView
+namespace UI
 {
-    [SerializeField] private Transform scoreboardEntriesParent;
-    [SerializeField] private ScoreBoardEntry scoreBoardEntryPrefab;
+    public class ScoreBoardView : GameView
+    {
+        [SerializeField] private Transform scoreboardEntriesParent;
+        [SerializeField] private ScoreBoardEntry scoreBoardEntryPrefab;
     
-    private GameViewManager _gameViewManager;
+        private GameViewManager _gameViewManager;
 
-    private void Awake()
-    {
-        InstanceHandler.RegisterInstance(this);
-    }
-
-    private void Start()
-    {
-        _gameViewManager = InstanceHandler.GetInstance<GameViewManager>();
-    }
-
-    protected void OnDestroy()
-    {
-        InstanceHandler.UnregisterInstance<ScoreBoardView>();
-    }
-
-    public void setData(Dictionary<PlayerID, ScoreManager.ScoreData> data)
-    {
-        foreach (Transform child in scoreboardEntriesParent.transform)
+        private void Awake()
         {
-            Destroy(child.gameObject);
+            InstanceHandler.RegisterInstance(this);
         }
-        
-        foreach (var playerScore in data)
+
+        private void Start()
         {
-            var entry = Instantiate(scoreBoardEntryPrefab, scoreboardEntriesParent);
-            entry.SetData(playerScore.Key.id.ToString(), playerScore.Value.kills, playerScore.Value.deaths);
+            _gameViewManager = InstanceHandler.GetInstance<GameViewManager>();
         }
-    }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Tab))
-            _gameViewManager.ShowView<ScoreBoardView>(false);
-        if (Input.GetKeyUp(KeyCode.Tab))
-            _gameViewManager.HideView<ScoreBoardView>();
-    }
+        protected void OnDestroy()
+        {
+            InstanceHandler.UnregisterInstance<ScoreBoardView>();
+        }
 
-    public override void OnShow()
-    {
+        public void setData(Dictionary<PlayerID, ScoreManager.ScoreData> data)
+        {
+            foreach (Transform child in scoreboardEntriesParent.transform)
+            {
+                Destroy(child.gameObject);
+            }
         
-    }
+            foreach (var playerScore in data)
+            {
+                var entry = Instantiate(scoreBoardEntryPrefab, scoreboardEntriesParent);
+                entry.SetData(playerScore.Key.id.ToString(), playerScore.Value.kills, playerScore.Value.deaths);
+            }
+        }
 
-    public override void OnHide()
-    {
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Tab))
+                _gameViewManager.ShowView<ScoreBoardView>(false);
+            if (Input.GetKeyUp(KeyCode.Tab))
+                _gameViewManager.HideView<ScoreBoardView>();
+        }
+
+        public override void OnShow()
+        {
         
+        }
+
+        public override void OnHide()
+        {
+        
+        }
     }
 }
