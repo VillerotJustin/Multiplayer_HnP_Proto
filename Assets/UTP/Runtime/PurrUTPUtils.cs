@@ -1,10 +1,10 @@
-using System.net;
+using System.Net;
 using JetBrains.Annotations;
 using PurrNet.Logging;
 
 namespace PurrNet.UTP
 {
-    public class PurrUTPUtils
+    public static class PurrUTPUtils
     {
         [UsedImplicitly]
         public static uint GetIPv4(this string address)

@@ -121,6 +121,11 @@ namespace PurrNet.UTP
         
         private UTPClient _client;
         
+#if UTP_NET_PACKAGE && !DISABLEUTPWORKS
+        private RelayServerData? _relayServerData;
+        private RelayServerData? _relayClientData;
+#endif
+        
         protected override void StartClientInternal()
         {
             Connect(_address, _serverPort);
@@ -131,6 +136,62 @@ namespace PurrNet.UTP
             Listen(_serverPort);
         }
 
+#if UTP_NET_PACKAGE && !DISABLEUTPWORKS
+        public void InitializeRelayServer(Allocation allocation)
+        {
+            // Store relay server data for use when starting server
+            // Find the dtls endpoint
+            var serverEndpoint = allocation.ServerEndpoints.Find(e => e.ConnectionType == "dtls");
+            if (serverEndpoint == null)
+            {
+                Debug.LogError("No DTLS endpoint found in allocation");
+                return;
+            }
+
+            _relayServerData = new RelayServerData(
+                serverEndpoint.Host,
+                (ushort)serverEndpoint.Port,
+                allocation.AllocationIdBytes,
+                allocation.ConnectionData,
+                allocation.ConnectionData,
+                allocation.Key,
+                serverEndpoint.Secure,
+                false // isWebSocket
+            );
+        }
+
+        public async System.Threading.Tasks.Task InitializeRelayClient(string joinCode)
+        {
+            // Convert join code to relay client data
+            try
+            {
+                var joinAllocation = await Unity.Services.Relay.RelayService.Instance.JoinAllocationAsync(joinCode);
+                
+                // Find the dtls endpoint
+                var serverEndpoint = joinAllocation.ServerEndpoints.Find(e => e.ConnectionType == "dtls");
+                if (serverEndpoint == null)
+                {
+                    Debug.LogError("No DTLS endpoint found in join allocation");
+                    return;
+                }
+
+                _relayClientData = new RelayServerData(
+                    serverEndpoint.Host,
+                    (ushort)serverEndpoint.Port,
+                    joinAllocation.AllocationIdBytes,
+                    joinAllocation.ConnectionData,
+                    joinAllocation.HostConnectionData,
+                    joinAllocation.Key,
+                    serverEndpoint.Secure,
+                    false // isWebSocket
+                );
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to initialize relay client: {e.Message}");
+            }
+        }
+#endif
         
         public void Listen(ushort port)
         {
@@ -142,9 +203,15 @@ namespace PurrNet.UTP
             _server = new UTPServer();
             _connections.Clear();
 
+#if UTP_NET_PACKAGE && !DISABLEUTPWORKS
+            if (_peerToPeer)
+                _server.ListenP2P(_dedicatedServer, _relayServerData);
+            else _server.Listen(port, _dedicatedServer, _relayServerData);
+#else
             if (_peerToPeer)
                 _server.ListenP2P(_dedicatedServer);
             else _server.Listen(port, _dedicatedServer);
+#endif
 
             if (_server.listening)
             {
@@ -199,9 +266,15 @@ namespace PurrNet.UTP
             _client.onConnectionState += OnClientStateChanged;
             _client.onDataReceived += OnClientDataReceived;
 
+#if UTP_NET_PACKAGE && !DISABLEUTPWORKS
+            _connectClientCoroutine = StartCoroutine(_peerToPeer
+                ? _client.ConnectP2P(ip, _dedicatedServer, _relayClientData)
+                : _client.Connect(ip, port, _dedicatedServer, _relayClientData));
+#else
             _connectClientCoroutine = StartCoroutine(_peerToPeer
                 ? _client.ConnectP2P(ip, _dedicatedServer)
                 : _client.Connect(ip, port, _dedicatedServer));
+#endif
         }
         
         private void OnClientDataReceived(ByteData data)

@@ -10,9 +10,11 @@ using System;
 using System.Collections;
 using PurrNet.Transports;
 #if UTP_NET_PACKAGE && !DISABLEUTPWORKS
-using System.Runtime.InteropServices;
 using PurrNet.Logging;
-// Unity Lobby Equivalent of Steamworks
+using Unity.Networking.Transport;
+using Unity.Networking.Transport.Relay;
+using Unity.Collections;
+using Unity.Networking.Transport.Error;
 #endif
 
 namespace PurrNet.UTP
@@ -20,14 +22,12 @@ namespace PurrNet.UTP
     public class UTPClient
     {
 #if UTP_NET_PACKAGE && !DISABLEUTPWORKS
-        const int MAX_MESSAGES = 256;
-        // TODO: Add UTP-specific connection callback/event handling
+        private NetworkDriver _driver;
+        private NetworkConnection _connection;
+        private NetworkPipeline _reliablePipeline;
+        private NetworkPipeline _unreliablePipeline;
         
-        // TODO: Add UTP connection handle/identifier
-        private object _connection; // Replace with actual UTP connection type
-        private bool _isDedicated;
-        static byte[] buffer = new byte[1024];
-        // TODO: Add UTP message buffer/queue structure
+        private byte[] _buffer = new byte[1024];
 #endif
 
 #pragma warning disable CS0067 // Event is never used
@@ -50,34 +50,65 @@ namespace PurrNet.UTP
             }
         }
 
-        public IEnumerator Connect(string address, ushort port, bool dedicated = false)
+        public IEnumerator Connect(string address, ushort port, bool dedicated = false, RelayServerData? relayData = null)
         {
             yield return null;
 #if UTP_NET_PACKAGE && !DISABLEUTPWORKS
-            _isDedicated = dedicated;
+            if (relayData.HasValue)
+            {
+                var relayDataValue = relayData.Value;
+                var settings = new NetworkSettings();
+                settings.WithRelayParameters(ref relayDataValue);
+                _driver = NetworkDriver.Create(settings);
+            }
+            else
+            {
+                _driver = NetworkDriver.Create();
+            }
+            
+            _reliablePipeline = _driver.CreatePipeline(typeof(ReliableSequencedPipelineStage));
+            _unreliablePipeline = NetworkPipeline.Null;
 
-            // TODO: Implement UTP connection via IP address and port
-            // Example: Use Unity Transport NetworkDriver to connect
+            NetworkEndpoint endpoint;
+            if (relayData.HasValue)
+            {
+                endpoint = relayData.Value.Endpoint;
+            }
+            else
+            {
+                if (!NetworkEndpoint.TryParse(address, port, out endpoint))
+                {
+                    PurrLogger.LogError($"Failed to parse address: {address}:{port}");
+                    connectionState = ConnectionState.Disconnected;
+                    yield break;
+                }
+            }
+
+            _connection = _driver.Connect(endpoint);
             
             PostConnect();
 #endif
         }
 
-        public IEnumerator ConnectP2P(string lobbyId, bool dedicated = false)
+        public IEnumerator ConnectP2P(string lobbyId, bool dedicated = false, RelayServerData? relayData = null)
         {
             yield return null;
 #if UTP_NET_PACKAGE && !DISABLEUTPWORKS
-            // TODO: Validate lobbyId or relay code
-            if (string.IsNullOrEmpty(lobbyId))
+            if (!relayData.HasValue)
             {
-                PurrLogger.LogError("Invalid Lobby ID provided as address to connect");
+                PurrLogger.LogError("Relay data is required for P2P connection");
                 yield break;
             }
 
-            _isDedicated = dedicated;
+            var relayDataValue = relayData.Value;
+            var settings = new NetworkSettings();
+            settings.WithRelayParameters(ref relayDataValue);
+            _driver = NetworkDriver.Create(settings);
+            
+            _reliablePipeline = _driver.CreatePipeline(typeof(ReliableSequencedPipelineStage));
+            _unreliablePipeline = NetworkPipeline.Null;
 
-            // TODO: Connect via Unity Lobby/Relay P2P
-            // Example: Use Unity Lobby and Relay services for P2P connection
+            _connection = _driver.Connect(relayData.Value.Endpoint);
             
             PostConnect();
 #endif
@@ -86,26 +117,34 @@ namespace PurrNet.UTP
         public void Send(ByteData data, Channel channel)
         {
 #if UTP_NET_PACKAGE && !DISABLEUTPWORKS
-            // TODO: Check if connection is valid
-            // if (_connection == null) return;
+            if (!_connection.IsCreated || _driver.GetConnectionState(_connection) != NetworkConnection.State.Connected)
+                return;
 
             MakeSureBufferCanFit(data.length);
 
-            // TODO: Implement UTP send based on channel type
-            // byte sendFlag = channel switch {
-            //     Channel.Unreliable => /* UTP Unreliable flag */,
-            //     Channel.UnreliableSequenced => /* UTP flag */,
-            //     Channel.ReliableOrdered => /* UTP Reliable flag */,
-            //     Channel.ReliableUnordered => /* UTP flag */,
-            //     _ => 0
-            // };
+            NetworkPipeline pipeline = channel switch {
+                Channel.Unreliable => _unreliablePipeline,
+                Channel.UnreliableSequenced => _unreliablePipeline,
+                Channel.ReliableOrdered => _reliablePipeline,
+                Channel.ReliableUnordered => _reliablePipeline,
+                _ => NetworkPipeline.Null
+            };
 
             try
             {
-                // TODO: Send message using UTP NetworkDriver
-                // Example: _driver.BeginSend(_connection, out var writer);
-                //          writer.WriteBytes(data.data, data.offset, data.length);
-                //          _driver.EndSend(writer);
+                var result = _driver.BeginSend(pipeline, _connection, out var writer);
+                if (result == (int)StatusCode.Success)
+                {
+                    unsafe
+                    {
+                        fixed (byte* dataPtr = &data.data[data.offset])
+                        {
+                            var span = new Span<byte>(dataPtr, data.length);
+                            writer.WriteBytes(span);
+                        }
+                    }
+                    _driver.EndSend(writer);
+                }
             }
             catch (Exception e)
             {
@@ -117,102 +156,115 @@ namespace PurrNet.UTP
         public void SendMessages()
         {
 #if UTP_NET_PACKAGE && !DISABLEUTPWORKS
-            // TODO: Flush messages if needed by UTP
-            // Example: _driver.ScheduleFlushSend(default).Complete();
+            if (_driver.IsCreated)
+                _driver.ScheduleUpdate().Complete();
 #endif
         }
 
         public void ReceiveMessages()
         {
 #if UTP_NET_PACKAGE && !DISABLEUTPWORKS
-            // TODO: Implement message receiving from UTP
-            // Example:
-            // DataStreamReader stream;
-            // NetworkEvent.Type cmd;
-            // while ((cmd = _connection.PopEvent(_driver, out stream)) != NetworkEvent.Type.Empty)
-            // {
-            //     if (cmd == NetworkEvent.Type.Data)
-            //     {
-            //         int packetLength = stream.Length;
-            //         MakeSureBufferCanFit(packetLength);
-            //         stream.ReadBytes(buffer, packetLength);
-            //         var byteData = new ByteData(buffer, 0, packetLength);
-            //         onDataReceived?.Invoke(byteData);
-            //     }
-            // }
+            if (!_driver.IsCreated)
+                return;
+
+            _driver.ScheduleUpdate().Complete();
+
+            NetworkEvent.Type cmd;
+            while ((cmd = _driver.PopEventForConnection(_connection, out var stream)) != NetworkEvent.Type.Empty)
+            {
+                if (cmd == NetworkEvent.Type.Data)
+                {
+                    int packetLength = stream.Length;
+                    MakeSureBufferCanFit(packetLength);
+                    
+                    unsafe
+                    {
+                        fixed (byte* bufferPtr = _buffer)
+                        {
+                            var span = new Span<byte>(bufferPtr, packetLength);
+                            stream.ReadBytes(span);
+                        }
+                    }
+                    
+                    var byteData = new ByteData(_buffer, 0, packetLength);
+                    onDataReceived?.Invoke(byteData);
+                }
+                else if (cmd == NetworkEvent.Type.Connect)
+                {
+                    connectionState = ConnectionState.Connected;
+                }
+                else if (cmd == NetworkEvent.Type.Disconnect)
+                {
+                    connectionState = ConnectionState.Disconnecting;
+                    connectionState = ConnectionState.Disconnected;
+                }
+            }
 #endif
         }
 #if UTP_NET_PACKAGE && !DISABLEUTPWORKS
 
-        private static void MakeSureBufferCanFit(int packetLength)
+        private void MakeSureBufferCanFit(int packetLength)
         {
-            if (buffer.Length < packetLength)
-                Array.Resize(ref buffer, packetLength);
+            if (_buffer.Length < packetLength)
+                Array.Resize(ref _buffer, packetLength);
         }
 
         private void PostConnect()
         {
-            // TODO: Check if connection is valid
-            // if (_connection == null)
-            // {
-            //     connectionState = ConnectionState.Disconnecting;
-            //     connectionState = ConnectionState.Disconnected;
-            //     PurrLogger.LogError("Failed to connect to host");
-            //     return;
-            // }
+            if (!_connection.IsCreated)
+            {
+                connectionState = ConnectionState.Disconnecting;
+                connectionState = ConnectionState.Disconnected;
+                PurrLogger.LogError("Failed to connect to host");
+                return;
+            }
 
             connectionState = ConnectionState.Connecting;
-            // TODO: Setup connection state change callback/handler
         }
 
-        private void OnLocalConnectionState(/* TODO: Add UTP connection state parameter */)
+        private void OnLocalConnectionState(NetworkEvent.Type eventType)
         {
-            // TODO: Implement connection state change handling
-            // Example: Check connection events from NetworkDriver
-            // switch (connectionEvent)
-            // {
-            //     case NetworkEvent.Type.Connect:
-            //         connectionState = ConnectionState.Connected;
-            //         break;
-            //     case NetworkEvent.Type.Disconnect:
-            //         connectionState = ConnectionState.Disconnecting;
-            //         connectionState = ConnectionState.Disconnected;
-            //         break;
-            // }
+            switch (eventType)
+            {
+                case NetworkEvent.Type.Connect:
+                    connectionState = ConnectionState.Connected;
+                    break;
+                case NetworkEvent.Type.Disconnect:
+                    connectionState = ConnectionState.Disconnecting;
+                    connectionState = ConnectionState.Disconnected;
+                    break;
+            }
         }
 
         void Disconnect()
         {
-            // TODO: Check if connection is valid and disconnect
-            // if (_connection != null)
-            // {
-            //     if (connectionState != ConnectionState.Disconnected)
-            //         connectionState = ConnectionState.Disconnecting;
-            //
-            //     try
-            //     {
-            //         // Example: _driver.Disconnect(_connection);
-            //     }
-            //     catch
-            //     {
-            //         // ignored
-            //     }
-            //
-            //     connectionState = ConnectionState.Disconnected;
-            //     _connection = null;
-            // }
+            if (_connection.IsCreated)
+            {
+                if (connectionState != ConnectionState.Disconnected)
+                    connectionState = ConnectionState.Disconnecting;
+
+                try
+                {
+                    _driver.Disconnect(_connection);
+                }
+                catch
+                {
+                    // ignored
+                }
+
+                connectionState = ConnectionState.Disconnected;
+                _connection = default;
+            }
         }
 #endif
 
         public void Stop()
         {
 #if UTP_NET_PACKAGE && !DISABLEUTPWORKS
-            // TODO: Cleanup connection state handlers/callbacks
-            
             Disconnect();
             
-            // TODO: Dispose UTP NetworkDriver if needed
-            // Example: if (_driver.IsCreated) _driver.Dispose();
+            if (_driver.IsCreated)
+                _driver.Dispose();
 #endif
         }
     }

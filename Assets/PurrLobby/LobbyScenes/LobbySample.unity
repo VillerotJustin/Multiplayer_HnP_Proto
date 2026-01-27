@@ -2297,7 +2297,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2108945444}
   m_HandleRect: {fileID: 2108945443}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -2388,7 +2388,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 018749c98c25d47418932e090d8f8fbf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentProvider: {fileID: 1097043117}
+  currentProvider: {fileID: 1097043118}
   createRoomArgs:
     maxPlayers: 5
     roomProperties:
@@ -2547,7 +2547,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lobbyManager: {fileID: 1097043115}
-  nextScene: NetworkedScene
+  nextScene: TestScene
 --- !u!114 &1097043117
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2575,6 +2575,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 361aa9233dd46274d92b8b56df069adb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: PurrNetLobbySetup::PurrLobby.Providers.UnityLobbyProvider
+  lobbyName: New Lobby
+  lobbyType: 1
+  lobbyPassword: 
+  maxLobbiesToFind: 10
+  playerName: Player
+  UseUnityRelayService: 1
+  RegionId: 
+  RelayJoinCode: 
+  RelayTimeout: 10000
 --- !u!1 &1101296062
 GameObject:
   m_ObjectHideFlags: 0

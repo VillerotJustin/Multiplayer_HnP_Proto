@@ -2261,7 +2261,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1534026508}
   - component: {fileID: 1534026507}
+  - component: {fileID: 1534026511}
   - component: {fileID: 1534026506}
+  - component: {fileID: 1534026510}
   - component: {fileID: 1534026509}
   m_Layer: 0
   m_Name: NetworkManager
@@ -2338,9 +2340,41 @@ MonoBehaviour:
   m_GameObject: {fileID: 1534026505}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 361aa9233dd46274d92b8b56df069adb, type: 3}
+  m_Script: {fileID: 11500000, guid: e5c476fd9733ed148b4631bd99c76108, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: PurrNetLobbySetup::PurrLobby.Providers.UnityLobbyProvider
+  m_EditorClassIdentifier: 
+--- !u!114 &1534026510
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1534026505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 692703800cba469ab94e9a959834defc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PurrNet.UTP.Runtime::PurrNet.UTP.UTPTransport
+  _serverPort: 5004
+  _dedicatedServer: 0
+  _peerToPeer: 1
+  _address: 127.0.0.1
+--- !u!114 &1534026511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1534026505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8236d3bdb4b232c4e86ae303902bd5db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PurrNet.Runtime::PurrNet.Transports.CompositeTransport
+  _ensureAllServersStart: 0
+  _transports:
+  - {fileID: 1534026510}
+  - {fileID: 1534026506}
 --- !u!1 &1725955074
 GameObject:
   m_ObjectHideFlags: 0

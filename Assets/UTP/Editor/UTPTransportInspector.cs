@@ -13,7 +13,7 @@ using PurrNet.Editor;
 using PurrNet.Transports;
 
 #if UTP_NET_PACKAGE && !DISABLEUTPWORKS
-// unsing Unity Loby equivalent of Steamworks
+// using Unity Transport with Relay for P2P connectivity
 #endif
 
 using UnityEditor;
@@ -47,14 +47,10 @@ namespace PurrNet.UTP.Editor
 #else
                 EditorGUILayout.HelpBox("Unity UTP dependencies are not installed. Please install it to use this transport.",
                     MessageType.Warning);
-                if (GUILayout.Button("Add Unity UTP dependencies to Package Manager"))
+                if (GUILayout.Button("Add Unity UTP dependencies to Package Manager") && GitHelper.CheckGit())
                 {
-                    if (GitHelper.CheckGit())
-                    {
-                        Client.Add(
-                            "");
-                        Client.Resolve();
-                    }
+                    Client.Add("com.unity.transport");
+                    Client.Resolve();
                 }
 #endif
                 GUI.enabled = true;
@@ -63,15 +59,15 @@ namespace PurrNet.UTP.Editor
             {
                 base.OnInspectorGUI();
                 TransportInspector.DrawTransportStatus(generic);
-#if UTP_NET_PACKAGE && !DISABLESTEAMWORKS
+#if UTP_NET_PACKAGE && !DISABLEUTPWORKS
                 if (Application.isPlaying)
                 {
-                    if (GUILayout.Button("Copy my SteamID to Clipboard"))
-                    {
-                        // Get Unity Lobby Infos
-                        string content = ""; // SteamUser.GetSteamID().ToString();
-                        EditorGUIUtility.systemCopyBuffer = content;
-                    }
+                    var utpTransport = (UTPTransport)target;
+                    EditorGUILayout.Space(10);
+                    EditorGUILayout.LabelField("Connection Info", EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField($"Client State: {utpTransport.clientState}");
+                    EditorGUILayout.LabelField($"Listener State: {utpTransport.listenerState}");
+                    EditorGUILayout.LabelField($"Connections: {utpTransport.connections.Count}");
                 }
 #endif
             }
