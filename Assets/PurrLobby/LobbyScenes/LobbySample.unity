@@ -2297,7 +2297,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2108945444}
   m_HandleRect: {fileID: 2108945443}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -2351,8 +2351,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1097043113}
   - component: {fileID: 1097043115}
-  - component: {fileID: 1097043117}
   - component: {fileID: 1097043116}
+  - component: {fileID: 1097043117}
+  - component: {fileID: 1097043118}
   m_Layer: 0
   m_Name: LobbyManager
   m_TagString: Untagged
@@ -2387,7 +2388,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 018749c98c25d47418932e090d8f8fbf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentProvider: {fileID: 0}
+  currentProvider: {fileID: 1097043117}
   createRoomArgs:
     maxPlayers: 5
     roomProperties:
@@ -2548,6 +2549,21 @@ MonoBehaviour:
   lobbyManager: {fileID: 1097043115}
   nextScene: NetworkedScene
 --- !u!114 &1097043117
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1097043112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15156e7f57bff964485891eba8344bbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: PurrNetLobbySetup::PurrLobby.Providers.SteamLobbyProvider
+  lobbyType: 2
+  maxLobbiesToFind: 10
+  handleSteamInit: 0
+--- !u!114 &1097043118
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
