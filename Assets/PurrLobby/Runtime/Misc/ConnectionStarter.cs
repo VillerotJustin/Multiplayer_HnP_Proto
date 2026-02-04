@@ -25,6 +25,9 @@ namespace PurrLobby
                 return;
             }
             
+            // Prevent NetworkManager from auto-starting in its own Start() method
+            _networkManager.enabled = false;
+            
             _lobbyDataHolder = FindFirstObjectByType<LobbyDataHolder>();
             if(!_lobbyDataHolder) {
                 PurrLogger.LogError($"Failed to get {nameof(LobbyDataHolder)} component.", this);
@@ -124,12 +127,17 @@ namespace PurrLobby
             if (!_networkManager || !_lobbyDataHolder || !_lobbyDataHolder.CurrentLobby.IsValid)
                 return;
 
+            // Re-enable NetworkManager before starting
+            _networkManager.enabled = true;
+
             if(_lobbyDataHolder.CurrentLobby.IsOwner)
             {
+                PurrLogger.Log("Starting as Host (Server only)", this);
                 _networkManager.StartServer();
             }
             else
             {
+                PurrLogger.Log("Starting as Client", this);
                 StartCoroutine(StartClient());
             }
         }
