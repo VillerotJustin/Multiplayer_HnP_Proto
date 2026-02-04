@@ -53,22 +53,29 @@ namespace PurrLobby
             
 #if UTP_LOBBYRELAY
             else if(_networkManager.transport is UTPTransport) {
+                var lobby = _lobbyDataHolder.CurrentLobby;
+                
+                PurrLogger.Log($"ConnectionStarter: Lobby IsOwner={lobby.IsOwner}, ServerObject={(lobby.ServerObject != null ? "EXISTS" : "NULL")}, JoinCode={(lobby.Properties.ContainsKey("JoinCode") ? lobby.Properties["JoinCode"] : "MISSING")}", this);
+                
                 // Validate relay data is available before initializing
-                if(_lobbyDataHolder.CurrentLobby.ServerObject == null && _lobbyDataHolder.CurrentLobby.IsOwner) {
+                if(lobby.ServerObject == null && lobby.IsOwner) {
                     PurrLogger.LogError("Cannot start UTP server: Relay ServerObject is null! Make sure SetAllReadyAsync() was called on the lobby provider.", this);
                     return;
                 }
                 
-                if(!_lobbyDataHolder.CurrentLobby.Properties.ContainsKey("JoinCode") || 
-                   string.IsNullOrEmpty(_lobbyDataHolder.CurrentLobby.Properties["JoinCode"])) {
+                if(!lobby.Properties.ContainsKey("JoinCode") || 
+                   string.IsNullOrEmpty(lobby.Properties["JoinCode"])) {
                     PurrLogger.LogError("Cannot connect UTP client: JoinCode is missing! Make sure SetAllReadyAsync() was called on the lobby provider.", this);
                     return;
                 }
                 
-                if(_lobbyDataHolder.CurrentLobby.IsOwner) {
-                    (_networkManager.transport as UTPTransport).InitializeRelayServer((Allocation)_lobbyDataHolder.CurrentLobby.ServerObject);
+                if(lobby.IsOwner) {
+                    PurrLogger.Log("Initializing UTP Relay Server...", this);
+                    (_networkManager.transport as UTPTransport).InitializeRelayServer((Allocation)lobby.ServerObject);
                 }
-                (_networkManager.transport as UTPTransport).InitializeRelayClient(_lobbyDataHolder.CurrentLobby.Properties["JoinCode"]);
+                
+                PurrLogger.Log($"Initializing UTP Relay Client with JoinCode: {lobby.Properties["JoinCode"]}", this);
+                (_networkManager.transport as UTPTransport).InitializeRelayClient(lobby.Properties["JoinCode"]);
             }
 #else
             else if(_networkManager.transport is UTPTransport) {
