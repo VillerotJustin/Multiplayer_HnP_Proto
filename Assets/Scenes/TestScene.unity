@@ -194,6 +194,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1067ce4a7f62a2149b3351b6c8610a2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
   _isSetup: 0
   _prefabId: -2147483648
   _componentIndex: -2147483648
@@ -201,8 +203,6 @@ MonoBehaviour:
   _parent: {fileID: 0}
   _invertedPathToNearestParent: 
   _directChildren: []
-  _networkRules: {fileID: 0}
-  _visitiblityRules: {fileID: 0}
   minPlayers: 2
 --- !u!1 &129701154
 GameObject:
@@ -888,6 +888,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6281fc148606ed56cb17bfa47b715ca7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ScoreManager
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
   _isSetup: 0
   _prefabId: -2147483648
   _componentIndex: -2147483648
@@ -895,8 +897,6 @@ MonoBehaviour:
   _parent: {fileID: 0}
   _invertedPathToNearestParent: 
   _directChildren: []
-  _networkRules: {fileID: 0}
-  _visitiblityRules: {fileID: 0}
   scores:
     _ownerAuth: 0
     _serializedDict:
@@ -1151,6 +1151,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b75530599bfcfa49ae4ecfe6ed3d21e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: PurrNet.Runtime::PurrNet.StateMachine.StateMachine
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
   _isSetup: 0
   _prefabId: -2147483648
   _componentIndex: -2147483648
@@ -1158,8 +1160,6 @@ MonoBehaviour:
   _parent: {fileID: 0}
   _invertedPathToNearestParent: 
   _directChildren: []
-  _networkRules: {fileID: 0}
-  _visitiblityRules: {fileID: 0}
   _ownerAuth: 0
   _states:
   - {fileID: 93783308}
@@ -1460,6 +1460,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0b2da1950012b4a6cae7e623dba4f541, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
   _isSetup: 0
   _prefabId: -2147483648
   _componentIndex: -2147483648
@@ -1467,8 +1469,6 @@ MonoBehaviour:
   _parent: {fileID: 0}
   _invertedPathToNearestParent: 
   _directChildren: []
-  _networkRules: {fileID: 0}
-  _visitiblityRules: {fileID: 0}
 --- !u!4 &1058821757
 Transform:
   m_ObjectHideFlags: 0
@@ -1547,6 +1547,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a595c5bffac14a2da0e7774fe2ba8b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
   _isSetup: 0
   _prefabId: -2147483648
   _componentIndex: -2147483648
@@ -1554,8 +1556,6 @@ MonoBehaviour:
   _parent: {fileID: 0}
   _invertedPathToNearestParent: 
   _directChildren: []
-  _networkRules: {fileID: 0}
-  _visitiblityRules: {fileID: 0}
   amountOfRounds: 3
   spawningState: {fileID: 1804146685}
 --- !u!4 &1206593025
@@ -2308,7 +2308,7 @@ MonoBehaviour:
   _startClientFlags: 7
   _cookieScope: 1
   _dontDestroyOnLoad: 0
-  _transport: {fileID: 1534026511}
+  _transport: {fileID: 1534026512}
   _networkPrefabs: {fileID: 11400000, guid: c8be5e43847a4d583aea289ea6374365, type: 2}
   _networkAssets: {fileID: 0}
   _networkRules: {fileID: 11400000, guid: 57ad4cc976c21074181652c4f7179d44, type: 2}
@@ -2637,6 +2637,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6cd5ff3b1b8a01b939ac00ad455bd7e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSpawningState
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
   _isSetup: 0
   _prefabId: -2147483648
   _componentIndex: -2147483648
@@ -2644,8 +2646,6 @@ MonoBehaviour:
   _parent: {fileID: 0}
   _invertedPathToNearestParent: 
   _directChildren: []
-  _networkRules: {fileID: 0}
-  _visitiblityRules: {fileID: 0}
   playerPrefab: {fileID: 8062521580905822082, guid: ce6ee2f9ec1ff017bb6ffdd266f522ab, type: 3}
   spawnPoints:
   - {fileID: 1938099400}
@@ -2802,6 +2802,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6634016d043f6a470af17a9d6b761f07, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  _networkRules: {fileID: 0}
+  _visitiblityRules: {fileID: 0}
   _isSetup: 0
   _prefabId: -2147483648
   _componentIndex: -2147483648
@@ -2809,8 +2811,6 @@ MonoBehaviour:
   _parent: {fileID: 0}
   _invertedPathToNearestParent: 
   _directChildren: []
-  _networkRules: {fileID: 0}
-  _visitiblityRules: {fileID: 0}
 --- !u!4 &1814470192
 Transform:
   m_ObjectHideFlags: 0
