@@ -105,9 +105,10 @@ namespace PurrLobby
                     PurrLogger.Log("Initializing UTP Relay Server...", this);
                     utpTransport.InitializeRelayServer((Allocation)lobby.ServerObject);
                 }
-                
-                PurrLogger.Log($"Initializing UTP Relay Client with JoinCode: {lobby.Properties["JoinCode"]}", this);
-                utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
+                else {
+                    PurrLogger.Log($"Initializing UTP Relay Client with JoinCode: {lobby.Properties["JoinCode"]}", this);
+                    utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
+                }
             }
 #else
             if(_networkManager.transport is UTPTransport || _networkManager.transport is CompositeTransport) {
