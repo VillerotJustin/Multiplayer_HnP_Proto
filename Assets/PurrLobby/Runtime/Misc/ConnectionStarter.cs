@@ -108,10 +108,9 @@ namespace PurrLobby
                 }
                 
                 if(lobby.IsOwner) {
-                    PurrLogger.Log("Initializing UTP Relay Server and Client (for host)...", this);
+                    PurrLogger.Log("Initializing UTP Relay Server (for host)...", this);
                     utpTransport.InitializeRelayServer((Allocation)lobby.ServerObject);
-                    // Host also needs client relay data to connect to its own server through relay
-                    await utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
+                    // Don't initialize client relay for host - host doesn't connect through relay
                 }
                 else {
                     PurrLogger.Log($"Initializing UTP Relay Client with JoinCode: {lobby.Properties["JoinCode"]}", this);
@@ -148,8 +147,8 @@ namespace PurrLobby
 
             if(_lobbyDataHolder.CurrentLobby.IsOwner)
             {
-                PurrLogger.Log("Starting as Host (Server + Local Client)", this);
-                _networkManager.StartHost(); // Start as host so the server owner can also play
+                PurrLogger.Log("Starting as Host (Server with local player)", this);
+                _networkManager.StartHost(); // StartHost creates server + local client
             }
             else
             {
