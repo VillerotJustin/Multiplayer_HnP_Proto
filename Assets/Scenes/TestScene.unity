@@ -2308,7 +2308,7 @@ MonoBehaviour:
   _startClientFlags: 7
   _cookieScope: 1
   _dontDestroyOnLoad: 0
-  _transport: {fileID: 1534026506}
+  _transport: {fileID: 1534026511}
   _networkPrefabs: {fileID: 11400000, guid: c8be5e43847a4d583aea289ea6374365, type: 2}
   _networkAssets: {fileID: 0}
   _networkRules: {fileID: 11400000, guid: 57ad4cc976c21074181652c4f7179d44, type: 2}
