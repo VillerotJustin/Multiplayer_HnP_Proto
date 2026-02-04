@@ -38,10 +38,10 @@ namespace PurrLobby
             }
             
             // Configure relay data in Awake so it's ready before NetworkManager.Start() runs
-            ConfigureRelayData();
+            _ = ConfigureRelayData();
         }
 
-        private void ConfigureRelayData()
+        private async System.Threading.Tasks.Task ConfigureRelayData()
         {
             if (!_networkManager)
             {
@@ -111,11 +111,11 @@ namespace PurrLobby
                     PurrLogger.Log("Initializing UTP Relay Server and Client (for host)...", this);
                     utpTransport.InitializeRelayServer((Allocation)lobby.ServerObject);
                     // Host also needs client relay data to connect to its own server through relay
-                    utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
+                    await utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
                 }
                 else {
                     PurrLogger.Log($"Initializing UTP Relay Client with JoinCode: {lobby.Properties["JoinCode"]}", this);
-                    utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
+                    await utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
                 }
             }
 #else
