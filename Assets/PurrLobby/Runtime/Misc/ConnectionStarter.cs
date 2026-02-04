@@ -125,8 +125,13 @@ namespace PurrLobby
                 return;
 
             if(_lobbyDataHolder.CurrentLobby.IsOwner)
+            {
                 _networkManager.StartServer();
-            StartCoroutine(StartClient());
+            }
+            else
+            {
+                StartCoroutine(StartClient());
+            }
         }
 
         private IEnumerator StartClient()
