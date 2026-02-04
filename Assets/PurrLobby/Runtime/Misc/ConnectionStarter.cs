@@ -108,8 +108,10 @@ namespace PurrLobby
                 }
                 
                 if(lobby.IsOwner) {
-                    PurrLogger.Log("Initializing UTP Relay Server...", this);
+                    PurrLogger.Log("Initializing UTP Relay Server and Client (for host)...", this);
                     utpTransport.InitializeRelayServer((Allocation)lobby.ServerObject);
+                    // Host also needs client relay data to connect to its own server through relay
+                    utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
                 }
                 else {
                     PurrLogger.Log($"Initializing UTP Relay Client with JoinCode: {lobby.Properties["JoinCode"]}", this);
