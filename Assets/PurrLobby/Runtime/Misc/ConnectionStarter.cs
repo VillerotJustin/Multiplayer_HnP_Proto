@@ -53,13 +53,28 @@ namespace PurrLobby
             
 #if UTP_LOBBYRELAY
             else if(_networkManager.transport is UTPTransport) {
+                // Validate relay data is available before initializing
+                if(_lobbyDataHolder.CurrentLobby.ServerObject == null && _lobbyDataHolder.CurrentLobby.IsOwner) {
+                    PurrLogger.LogError("Cannot start UTP server: Relay ServerObject is null! Make sure SetAllReadyAsync() was called on the lobby provider.", this);
+                    return;
+                }
+                
+                if(!_lobbyDataHolder.CurrentLobby.Properties.ContainsKey("JoinCode") || 
+                   string.IsNullOrEmpty(_lobbyDataHolder.CurrentLobby.Properties["JoinCode"])) {
+                    PurrLogger.LogError("Cannot connect UTP client: JoinCode is missing! Make sure SetAllReadyAsync() was called on the lobby provider.", this);
+                    return;
+                }
+                
                 if(_lobbyDataHolder.CurrentLobby.IsOwner) {
                     (_networkManager.transport as UTPTransport).InitializeRelayServer((Allocation)_lobbyDataHolder.CurrentLobby.ServerObject);
                 }
                 (_networkManager.transport as UTPTransport).InitializeRelayClient(_lobbyDataHolder.CurrentLobby.Properties["JoinCode"]);
             }
 #else
-                //P2P Connection, receive IP/Port from server
+            else if(_networkManager.transport is UTPTransport) {
+                //P2P Connection without relay - requires manual IP/Port configuration
+                PurrLogger.LogWarning("UTP transport detected but UTP_LOBBYRELAY is not defined. You need to manually configure the transport for direct connection or enable Unity Relay service.", this);
+            }
 #endif
 
             if(_lobbyDataHolder.CurrentLobby.IsOwner)
