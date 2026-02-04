@@ -15,6 +15,8 @@ namespace PurrLobby
         [PurrScene, SerializeField] private string nextScene;
         [SerializeField] private bool subscribeToOnAllReady = true;
 
+        private static bool _hasAlreadySwitched = false;
+
         private void Start()
         {
             if (subscribeToOnAllReady && lobbyManager != null)
@@ -39,6 +41,15 @@ namespace PurrLobby
         /// </summary>
         public void SwitchScene()
         {
+            // Prevent multiple scene switches from duplicate instances or multiple invocations
+            if (_hasAlreadySwitched)
+            {
+                PurrLogger.LogWarning($"SwitchScene already called, ignoring duplicate call", this);
+                return;
+            }
+            
+            _hasAlreadySwitched = true;
+            
             if (string.IsNullOrEmpty(nextScene))
             {
                 PurrLogger.LogError("Next scene name is not set!", this);

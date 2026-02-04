@@ -15,7 +15,9 @@ namespace PurrLobby
     {
         private NetworkManager _networkManager;
         private LobbyDataHolder _lobbyDataHolder;
-        private bool _hasStarted = false;
+        
+        // Static to persist across duplicate instances if scene loads multiple times
+        private static bool _hasStarted = false;
         
         private void Awake()
         {
@@ -142,8 +144,8 @@ namespace PurrLobby
 
             if(_lobbyDataHolder.CurrentLobby.IsOwner)
             {
-                PurrLogger.Log("Starting as Host (Server only)", this);
-                _networkManager.StartServer();
+                PurrLogger.Log("Starting as Host (Server + Local Client)", this);
+                _networkManager.StartHost(); // Start as host so the server owner can also play
             }
             else
             {
