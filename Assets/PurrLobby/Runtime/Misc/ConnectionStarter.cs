@@ -117,6 +117,9 @@ namespace PurrLobby
                     PurrLogger.Log($"Initializing UTP Relay Client with JoinCode: {lobby.Properties["JoinCode"]}", this);
                     await utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
                 }
+                
+                // Now that relay is configured, start the network
+                StartNetworkAfterRelayConfig();
             }
 #else
             if(_networkManager.transport is UTPTransport || _networkManager.transport is CompositeTransport) {
@@ -126,16 +129,15 @@ namespace PurrLobby
 #endif
         }
 
-        private void Start()
+        private void StartNetworkAfterRelayConfig()
         {
             // Prevent multiple calls if scene loads multiple times
             if (_hasStarted)
             {
-                PurrLogger.LogWarning("ConnectionStarter.Start() called again - ignoring to prevent duplicate server/client start", this);
+                PurrLogger.LogWarning("StartNetworkAfterRelayConfig() called again - ignoring to prevent duplicate server/client start", this);
                 return;
             }
             
-            // Start server/client - relay data should already be configured from Awake()
             if (!_networkManager || !_lobbyDataHolder || !_lobbyDataHolder.CurrentLobby.IsValid)
                 return;
 
