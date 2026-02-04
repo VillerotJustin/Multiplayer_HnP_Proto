@@ -29,11 +29,15 @@ namespace PurrLobby
 
         private void Start()
         {
+            PurrLogger.Log("ConnectionStarter.Start() called", this);
+            
             if (!_networkManager)
             {
                 PurrLogger.LogError($"Failed to start connection. {nameof(NetworkManager)} is null!", this);
                 return;
             }
+            
+            PurrLogger.Log("NetworkManager found", this);
             
             if (!_lobbyDataHolder)
             {
@@ -41,12 +45,16 @@ namespace PurrLobby
                 return;
             }
             
+            PurrLogger.Log($"LobbyDataHolder found. Lobby IsValid: {_lobbyDataHolder.CurrentLobby.IsValid}", this);
+            
             if (!_lobbyDataHolder.CurrentLobby.IsValid)
             {
                 PurrLogger.LogError($"Failed to start connection. Lobby is invalid!", this);
                 return;
             }
 
+            PurrLogger.Log($"Checking transport type: {_networkManager.transport?.GetType().Name ?? "NULL"}", this);
+            
             if(_networkManager.transport is PurrTransport) {
                 (_networkManager.transport as PurrTransport).roomName = _lobbyDataHolder.CurrentLobby.LobbyId;
             } 
