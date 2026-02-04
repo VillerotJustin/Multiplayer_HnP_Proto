@@ -1103,7 +1103,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.3827469, y: 0.124508224}
   m_AnchorMax: {x: 0.6183736, y: 0.20542626}
-  m_AnchoredPosition: {x: 0.5239563, y: -0.49993896}
+  m_AnchoredPosition: {x: 0.5239258, y: -0.49993896}
   m_SizeDelta: {x: 1.0480042, y: 1.5239868}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &628032785
@@ -1872,7 +1872,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 40
+  m_fontSize: 24.45
   m_fontSizeBase: 14
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2171,7 +2171,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2072866401}
   m_HandleRect: {fileID: 2072866400}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -2297,7 +2297,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2108945444}
   m_HandleRect: {fileID: 2108945443}
   m_Direction: 2
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -2351,9 +2351,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1097043113}
   - component: {fileID: 1097043115}
-  - component: {fileID: 1097043116}
   - component: {fileID: 1097043117}
-  - component: {fileID: 1097043118}
+  - component: {fileID: 1097043114}
+  - component: {fileID: 1097043116}
   m_Layer: 0
   m_Name: LobbyManager
   m_TagString: Untagged
@@ -2376,6 +2376,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1097043114
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1097043112}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15156e7f57bff964485891eba8344bbb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lobbyType: 2
+  maxLobbiesToFind: 10
+  handleSteamInit: 0
 --- !u!114 &1097043115
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2388,7 +2403,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 018749c98c25d47418932e090d8f8fbf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentProvider: {fileID: 1097043118}
+  currentProvider: {fileID: 1097043117}
   createRoomArgs:
     maxPlayers: 5
     roomProperties:
@@ -2549,21 +2564,6 @@ MonoBehaviour:
   lobbyManager: {fileID: 1097043115}
   nextScene: TestScene
 --- !u!114 &1097043117
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1097043112}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 15156e7f57bff964485891eba8344bbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: PurrNetLobbySetup::PurrLobby.Providers.SteamLobbyProvider
-  lobbyType: 2
-  maxLobbiesToFind: 10
-  handleSteamInit: 0
---- !u!114 &1097043118
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -2776,7 +2776,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50
+  m_fontSize: 35.75
   m_fontSizeBase: 60
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -2913,7 +2913,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 43.35
+  m_fontSize: 23.05
   m_fontSizeBase: 60
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -3257,7 +3257,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 94.9
+  m_fontSize: 100
   m_fontSizeBase: 60
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -4014,7 +4014,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.39482898, y: 0.032672144}
   m_AnchorMax: {x: 0.6067471, y: 0.10265572}
-  m_AnchoredPosition: {x: 0.023895264, y: 0}
+  m_AnchoredPosition: {x: 0.023925781, y: 0}
   m_SizeDelta: {x: -0.34899902, y: 3.363}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1487335975
@@ -4575,7 +4575,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50
+  m_fontSize: 36.45
   m_fontSizeBase: 60
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -5172,7 +5172,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 40
+  m_fontSize: 24.45
   m_fontSizeBase: 14
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -5446,7 +5446,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 50
+  m_fontSize: 31.95
   m_fontSizeBase: 60
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -5846,7 +5846,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 34.5
+  m_fontSize: 18
   m_fontSizeBase: 60
   m_fontWeight: 400
   m_enableAutoSizing: 1
