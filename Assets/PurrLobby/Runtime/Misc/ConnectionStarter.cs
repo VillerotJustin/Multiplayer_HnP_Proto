@@ -109,15 +109,28 @@ namespace PurrLobby
                 
                 if(lobby.IsOwner) {
                     PurrLogger.Log("Initializing UTP Relay Server (for host)...", this);
-                    utpTransport.InitializeRelayServer((Allocation)lobby.ServerObject);
+                    bool serverInit = utpTransport.InitializeRelayServer((Allocation)lobby.ServerObject);
+                    PurrLogger.Log($"Relay Server initialized: {serverInit}", this);
                     
                     // Host also needs relay client to connect to itself through relay
                     PurrLogger.Log($"Initializing UTP Relay Client for host with JoinCode: {lobby.Properties["JoinCode"]}", this);
-                    await utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
+                    try {
+                        bool clientInit = await utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
+                        PurrLogger.Log($"Relay Client initialized for host: {clientInit}", this);
+                    }
+                    catch (System.Exception ex) {
+                        PurrLogger.LogError($"Failed to initialize relay client for host: {ex.Message}", this);
+                    }
                 }
                 else {
                     PurrLogger.Log($"Initializing UTP Relay Client with JoinCode: {lobby.Properties["JoinCode"]}", this);
-                    await utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
+                    try {
+                        bool clientInit = await utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
+                        PurrLogger.Log($"Relay Client initialized: {clientInit}", this);
+                    }
+                    catch (System.Exception ex) {
+                        PurrLogger.LogError($"Failed to initialize relay client: {ex.Message}", this);
+                    }
                 }
                 
                 // Now that relay is configured, start the network
