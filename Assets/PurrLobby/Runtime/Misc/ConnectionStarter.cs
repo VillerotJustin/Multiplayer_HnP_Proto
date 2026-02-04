@@ -178,7 +178,7 @@ namespace PurrLobby
         private IEnumerator StartHostClient()
         {
             // Give server time to fully initialize before client connects
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(2f);
             PurrLogger.Log("Starting host's client connection...", this);
             _networkManager.StartClient();
         }
