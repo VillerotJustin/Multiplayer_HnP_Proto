@@ -127,8 +127,8 @@ namespace PurrLobby
             if (!_networkManager || !_lobbyDataHolder || !_lobbyDataHolder.CurrentLobby.IsValid)
                 return;
 
-            // Re-enable NetworkManager before starting
-            _networkManager.enabled = true;
+            // Note: NetworkManager remains disabled to prevent its Start() from auto-executing
+            // We can still call StartServer/StartClient methods on disabled components
 
             if(_lobbyDataHolder.CurrentLobby.IsOwner)
             {
