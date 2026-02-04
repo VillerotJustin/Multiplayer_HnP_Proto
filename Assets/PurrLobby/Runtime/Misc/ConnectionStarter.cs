@@ -18,22 +18,28 @@ namespace PurrLobby
         
         private void Awake()
         {
+            PurrLogger.Log("ConnectionStarter.Awake() - Initializing relay data BEFORE NetworkManager.Start()", this);
+            
             if(!TryGetComponent(out _networkManager)) {
                 PurrLogger.LogError($"Failed to get {nameof(NetworkManager)} component.", this);
+                return;
             }
             
             _lobbyDataHolder = FindFirstObjectByType<LobbyDataHolder>();
-            if(!_lobbyDataHolder)
+            if(!_lobbyDataHolder) {
                 PurrLogger.LogError($"Failed to get {nameof(LobbyDataHolder)} component.", this);
+                return;
+            }
+            
+            // Configure relay data in Awake so it's ready before NetworkManager.Start() runs
+            ConfigureRelayData();
         }
 
-        private void Start()
+        private void ConfigureRelayData()
         {
-            PurrLogger.Log("ConnectionStarter.Start() called", this);
-            
             if (!_networkManager)
             {
-                PurrLogger.LogError($"Failed to start connection. {nameof(NetworkManager)} is null!", this);
+                PurrLogger.LogError($"Failed to configure relay. {nameof(NetworkManager)} is null!", this);
                 return;
             }
             
@@ -41,7 +47,7 @@ namespace PurrLobby
             
             if (!_lobbyDataHolder)
             {
-                PurrLogger.LogError($"Failed to start connection. {nameof(LobbyDataHolder)} is null!", this);
+                PurrLogger.LogError($"Failed to configure relay. {nameof(LobbyDataHolder)} is null!", this);
                 return;
             }
             
@@ -49,7 +55,7 @@ namespace PurrLobby
             
             if (!_lobbyDataHolder.CurrentLobby.IsValid)
             {
-                PurrLogger.LogError($"Failed to start connection. Lobby is invalid!", this);
+                PurrLogger.LogError($"Failed to configure relay. Lobby is invalid!", this);
                 return;
             }
 
@@ -60,37 +66,62 @@ namespace PurrLobby
             } 
             
 #if UTP_LOBBYRELAY
-            else if(_networkManager.transport is UTPTransport) {
+            // Handle both direct UTPTransport and UTPTransport inside CompositeTransport
+            UTPTransport utpTransport = null;
+            
+            if(_networkManager.transport is UTPTransport) {
+                utpTransport = _networkManager.transport as UTPTransport;
+            }
+            else if(_networkManager.transport is CompositeTransport) {
+                // Look for UTPTransport inside CompositeTransport
+                var composite = _networkManager.transport as CompositeTransport;
+                foreach(var transport in composite.transports) {
+                    if(transport is UTPTransport) {
+                        utpTransport = transport as UTPTransport;
+                        PurrLogger.Log("Found UTPTransport inside CompositeTransport", this);
+                        break;
+                    }
+                }
+            }
+            
+            if(utpTransport != null) {
                 var lobby = _lobbyDataHolder.CurrentLobby;
                 
-                PurrLogger.Log($"ConnectionStarter: Lobby IsOwner={lobby.IsOwner}, ServerObject={(lobby.ServerObject != null ? "EXISTS" : "NULL")}, JoinCode={(lobby.Properties.ContainsKey("JoinCode") ? lobby.Properties["JoinCode"] : "MISSING")}", this);
+                PurrLogger.Log($"Configuring UTP Relay: IsOwner={lobby.IsOwner}, ServerObject={(lobby.ServerObject != null ? "EXISTS" : "NULL")}, JoinCode={(lobby.Properties.ContainsKey("JoinCode") ? lobby.Properties["JoinCode"] : "MISSING")}", this);
                 
                 // Validate relay data is available before initializing
                 if(lobby.ServerObject == null && lobby.IsOwner) {
-                    PurrLogger.LogError("Cannot start UTP server: Relay ServerObject is null! Make sure SetAllReadyAsync() was called on the lobby provider.", this);
+                    PurrLogger.LogError("Cannot configure UTP server: Relay ServerObject is null! Make sure SetAllReadyAsync() was called on the lobby provider.", this);
                     return;
                 }
                 
                 if(!lobby.Properties.ContainsKey("JoinCode") || 
                    string.IsNullOrEmpty(lobby.Properties["JoinCode"])) {
-                    PurrLogger.LogError("Cannot connect UTP client: JoinCode is missing! Make sure SetAllReadyAsync() was called on the lobby provider.", this);
+                    PurrLogger.LogError("Cannot configure UTP client: JoinCode is missing! Make sure SetAllReadyAsync() was called on the lobby provider.", this);
                     return;
                 }
                 
                 if(lobby.IsOwner) {
                     PurrLogger.Log("Initializing UTP Relay Server...", this);
-                    (_networkManager.transport as UTPTransport).InitializeRelayServer((Allocation)lobby.ServerObject);
+                    utpTransport.InitializeRelayServer((Allocation)lobby.ServerObject);
                 }
                 
                 PurrLogger.Log($"Initializing UTP Relay Client with JoinCode: {lobby.Properties["JoinCode"]}", this);
-                (_networkManager.transport as UTPTransport).InitializeRelayClient(lobby.Properties["JoinCode"]);
+                utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
             }
 #else
-            else if(_networkManager.transport is UTPTransport) {
+            if(_networkManager.transport is UTPTransport || _networkManager.transport is CompositeTransport) {
                 //P2P Connection without relay - requires manual IP/Port configuration
                 PurrLogger.LogWarning("UTP transport detected but UTP_LOBBYRELAY is not defined. You need to manually configure the transport for direct connection or enable Unity Relay service.", this);
             }
 #endif
+        }
+
+        private void Start()
+        {
+            // Start server/client - relay data should already be configured from Awake()
+            if (!_networkManager || !_lobbyDataHolder || !_lobbyDataHolder.CurrentLobby.IsValid)
+                return;
 
             if(_lobbyDataHolder.CurrentLobby.IsOwner)
                 _networkManager.StartServer();
