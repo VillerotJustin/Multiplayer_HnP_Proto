@@ -148,7 +148,21 @@ namespace PurrLobby
             if(_lobbyDataHolder.CurrentLobby.IsOwner)
             {
                 PurrLogger.Log("Starting as Host (Server with local player)", this);
-                _networkManager.StartHost(); // StartHost creates server + local client
+                
+                // For host: client should connect locally, not through relay
+                #if UTP_LOBBYRELAY
+                if (_networkManager.transport is UTPTransport utpTransport)
+                {
+                    var originalPeerToPeer = utpTransport.peerToPeer;
+                    utpTransport.peerToPeer = false; // Disable P2P for host's local client
+                    _networkManager.StartHost(); // StartHost creates server + local client
+                    utpTransport.peerToPeer = originalPeerToPeer; // Restore setting
+                }
+                else
+                #endif
+                {
+                    _networkManager.StartHost();
+                }
             }
             else
             {
