@@ -193,12 +193,22 @@ namespace PurrLobby
             var transport = _networkManager.GetComponent<UTPTransport>();
             if (transport != null)
             {
+                PurrLogger.Log($"peerToPeer flag: {transport.peerToPeer}", this);
+                
                 var relayClientDataField = transport.GetType().GetField("_relayClientData", 
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 if (relayClientDataField != null)
                 {
                     var relayData = relayClientDataField.GetValue(transport);
                     PurrLogger.Log($"RelayClientData before StartClient: {(relayData != null ? "SET" : "NULL")}", this);
+                }
+                
+                var relayServerDataField = transport.GetType().GetField("_relayServerData", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (relayServerDataField != null)
+                {
+                    var relayServerData = relayServerDataField.GetValue(transport);
+                    PurrLogger.Log($"RelayServerData: {(relayServerData != null ? "SET" : "NULL")}", this);
                 }
             }
             
