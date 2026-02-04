@@ -164,13 +164,23 @@ namespace PurrLobby
             if(_lobbyDataHolder.CurrentLobby.IsOwner)
             {
                 PurrLogger.Log("Starting as Host (Server + Client through relay)", this);
-                _networkManager.StartHost(); // Both server and client use relay
+                // Start server first, then client after a delay
+                _networkManager.StartServer();
+                StartCoroutine(StartHostClient());
             }
             else
             {
                 PurrLogger.Log("Starting as Client", this);
                 StartCoroutine(StartClient());
             }
+        }
+
+        private IEnumerator StartHostClient()
+        {
+            // Give server time to fully initialize before client connects
+            yield return new WaitForSeconds(0.5f);
+            PurrLogger.Log("Starting host's client connection...", this);
+            _networkManager.StartClient();
         }
 
         private IEnumerator StartClient()
