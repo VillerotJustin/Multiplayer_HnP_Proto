@@ -180,6 +180,20 @@ namespace PurrLobby
             // Give server time to fully initialize before client connects
             yield return new WaitForSeconds(2f);
             PurrLogger.Log("Starting host's client connection...", this);
+            
+            // Verify relay data is set
+            var transport = _networkManager.GetComponent<UTPTransport>();
+            if (transport != null)
+            {
+                var relayClientDataField = transport.GetType().GetField("_relayClientData", 
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (relayClientDataField != null)
+                {
+                    var relayData = relayClientDataField.GetValue(transport);
+                    PurrLogger.Log($"RelayClientData before StartClient: {(relayData != null ? "SET" : "NULL")}", this);
+                }
+            }
+            
             _networkManager.StartClient();
         }
 
