@@ -15,6 +15,7 @@ namespace PurrLobby
     {
         private NetworkManager _networkManager;
         private LobbyDataHolder _lobbyDataHolder;
+        private bool _hasStarted = false;
         
         private void Awake()
         {
@@ -123,12 +124,21 @@ namespace PurrLobby
 
         private void Start()
         {
+            // Prevent multiple calls if scene loads multiple times
+            if (_hasStarted)
+            {
+                PurrLogger.LogWarning("ConnectionStarter.Start() called again - ignoring to prevent duplicate server/client start", this);
+                return;
+            }
+            
             // Start server/client - relay data should already be configured from Awake()
             if (!_networkManager || !_lobbyDataHolder || !_lobbyDataHolder.CurrentLobby.IsValid)
                 return;
 
             // Note: NetworkManager remains disabled to prevent its Start() from auto-executing
             // We can still call StartServer/StartClient methods on disabled components
+
+            _hasStarted = true;
 
             if(_lobbyDataHolder.CurrentLobby.IsOwner)
             {
