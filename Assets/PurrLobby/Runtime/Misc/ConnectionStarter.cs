@@ -109,6 +109,10 @@ namespace PurrLobby
                 
                 if(lobby.IsOwner) {
                     PurrLogger.Log("Initializing UTP Relay Server (for host)...", this);
+                    
+                    // Unity Relay host-client uses traditional client-server architecture, not P2P
+                    utpTransport.peerToPeer = false;
+                    
                     bool serverInit = utpTransport.InitializeRelayServer((Allocation)lobby.ServerObject);
                     PurrLogger.Log($"Relay Server initialized: {serverInit}", this);
                     
@@ -124,6 +128,10 @@ namespace PurrLobby
                 }
                 else {
                     PurrLogger.Log($"Initializing UTP Relay Client with JoinCode: {lobby.Properties["JoinCode"]}", this);
+                    
+                    // Unity Relay host-client uses traditional client-server architecture, not P2P
+                    utpTransport.peerToPeer = false;
+                    
                     try {
                         bool clientInit = await utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
                         PurrLogger.Log($"Relay Client initialized: {clientInit}", this);
