@@ -110,7 +110,10 @@ namespace PurrLobby
                 if(lobby.IsOwner) {
                     PurrLogger.Log("Initializing UTP Relay Server (for host)...", this);
                     utpTransport.InitializeRelayServer((Allocation)lobby.ServerObject);
-                    // Don't initialize client relay for host - host doesn't connect through relay
+                    
+                    // Host also needs relay client to connect to itself through relay
+                    PurrLogger.Log($"Initializing UTP Relay Client for host with JoinCode: {lobby.Properties["JoinCode"]}", this);
+                    await utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
                 }
                 else {
                     PurrLogger.Log($"Initializing UTP Relay Client with JoinCode: {lobby.Properties["JoinCode"]}", this);
@@ -147,24 +150,8 @@ namespace PurrLobby
 
             if(_lobbyDataHolder.CurrentLobby.IsOwner)
             {
-                PurrLogger.Log("Starting as Host (Server with local player)", this);
-                
-                // For host: client should connect locally, not through relay
-                #if UTP_LOBBYRELAY
-                if (_networkManager.transport is UTPTransport utpTransport)
-                {
-                    var originalPeerToPeer = utpTransport.peerToPeer;
-                    utpTransport.peerToPeer = false; // Disable P2P for host's local client
-                    _networkManager.StartHost(); // StartHost creates server + local client
-                    
-                    // Restore peerToPeer after a delay to allow StartClient coroutine to read the value
-                    StartCoroutine(RestorePeerToPeerSetting(utpTransport, originalPeerToPeer));
-                }
-                else
-                #endif
-                {
-                    _networkManager.StartHost();
-                }
+                PurrLogger.Log("Starting as Host (Server + Client through relay)", this);
+                _networkManager.StartHost(); // Both server and client use relay
             }
             else
             {
@@ -178,14 +165,5 @@ namespace PurrLobby
             yield return new WaitForSeconds(1f);
             _networkManager.StartClient();
         }
-
-        #if UTP_LOBBYRELAY
-        private IEnumerator RestorePeerToPeerSetting(UTPTransport transport, bool originalValue)
-        {
-            // Wait for StartClient coroutine to read the disabled peerToPeer value
-            yield return new WaitForSeconds(0.5f);
-            transport.peerToPeer = originalValue;
-        }
-        #endif
     }
 }
