@@ -11,25 +11,33 @@ using Unity.Services.Relay.Models;
 
 namespace PurrLobby
 {
+    /// <summary>
+    /// Manages network connection initialization for different lobby providers.
+    /// 
+    /// For Unity Lobby with Relay (UTP_LOBBYRELAY):
+    /// - Async relay configuration with proper timing
+    /// - NetworkManager disabled until relay is ready
+    /// - Host initializes both server AND client relay data for P2P mode
+    /// 
+    /// For Steam/Other providers:
+    /// - Simple synchronous initialization
+    /// - Standard NetworkManager startup flow
+    /// </summary>
     public class ConnectionStarter : MonoBehaviour
     {
         private NetworkManager _networkManager;
         private LobbyDataHolder _lobbyDataHolder;
         
-        // Static to persist across duplicate instances if scene loads multiple times
+        // Prevents duplicate network starts if scene loads multiple times
         private static bool _hasStarted = false;
+        private bool _useUnityRelay = false;
         
         private void Awake()
         {
-            PurrLogger.Log("ConnectionStarter.Awake() - Initializing relay data BEFORE NetworkManager.Start()", this);
-            
             if(!TryGetComponent(out _networkManager)) {
                 PurrLogger.LogError($"Failed to get {nameof(NetworkManager)} component.", this);
                 return;
             }
-            
-            // Prevent NetworkManager from auto-starting in its own Start() method
-            _networkManager.enabled = false;
             
             _lobbyDataHolder = FindFirstObjectByType<LobbyDataHolder>();
             if(!_lobbyDataHolder) {
@@ -37,10 +45,88 @@ namespace PurrLobby
                 return;
             }
             
-            // Configure relay data in Awake so it's ready before NetworkManager.Start() runs
-            _ = ConfigureRelayData();
+#if UTP_LOBBYRELAY
+            // Check if we're using UTP with relay - requires async configuration
+            _useUnityRelay = IsUsingUTPTransport();
+            
+            if (_useUnityRelay)
+            {
+                // CRITICAL FIX for Unity Relay: Disable NetworkManager to prevent auto-start
+                // Relay data must be configured asynchronously before NetworkManager starts
+                PurrLogger.Log("Unity Relay detected - configuring relay data before NetworkManager starts", this);
+                _networkManager.enabled = false;
+                _ = ConfigureRelayData();
+                return;
+            }
+#endif
+            
+            // For non-relay providers (Steam, etc.), use standard synchronous flow
+            // NetworkManager will start normally in its Start() method
+        }
+        
+#if UTP_LOBBYRELAY
+        private bool IsUsingUTPTransport()
+        {
+            if (_networkManager.transport is UTPTransport)
+                return true;
+                
+            if (_networkManager.transport is CompositeTransport composite)
+            {
+                foreach (var transport in composite.transports)
+                {
+                    if (transport is UTPTransport)
+                        return true;
+                }
+            }
+            
+            return false;
+        }
+#endif
+
+        private void Start()
+        {
+            // Skip Start() if using Unity Relay - ConfigureRelayData() handles startup
+            if (_useUnityRelay)
+                return;
+                
+            // Standard startup for Steam and other non-relay providers
+            StartNetworkStandard();
+        }
+        
+        private void StartNetworkStandard()
+        {
+            if (!_networkManager)
+            {
+                PurrLogger.LogError($"Failed to start connection. {nameof(NetworkManager)} is null!", this);
+                return;
+            }
+            
+            if (!_lobbyDataHolder)
+            {
+                PurrLogger.LogError($"Failed to start connection. {nameof(LobbyDataHolder)} is null!", this);
+                return;
+            }
+            
+            if (!_lobbyDataHolder.CurrentLobby.IsValid)
+            {
+                PurrLogger.LogError($"Failed to start connection. Lobby is invalid!", this);
+                return;
+            }
+
+            if(_networkManager.transport is PurrTransport) {
+                (_networkManager.transport as PurrTransport).roomName = _lobbyDataHolder.CurrentLobby.LobbyId;
+            }
+
+            if(_lobbyDataHolder.CurrentLobby.IsOwner)
+                _networkManager.StartServer();
+            StartCoroutine(StartClient());
         }
 
+#if UTP_LOBBYRELAY
+        /// <summary>
+        /// Configures Unity Relay data asynchronously for UTP transport.
+        /// CRITICAL: Must complete before NetworkManager starts to avoid connection failures.
+        /// </summary>
         private async System.Threading.Tasks.Task ConfigureRelayData()
         {
             if (!_networkManager)
@@ -67,19 +153,13 @@ namespace PurrLobby
 
             PurrLogger.Log($"Checking transport type: {_networkManager.transport?.GetType().Name ?? "NULL"}", this);
             
-            if(_networkManager.transport is PurrTransport) {
-                (_networkManager.transport as PurrTransport).roomName = _lobbyDataHolder.CurrentLobby.LobbyId;
-            } 
-            
-#if UTP_LOBBYRELAY
-            // Handle both direct UTPTransport and UTPTransport inside CompositeTransport
+            // Find UTPTransport (either direct or inside CompositeTransport)
             UTPTransport utpTransport = null;
             
             if(_networkManager.transport is UTPTransport) {
                 utpTransport = _networkManager.transport as UTPTransport;
             }
             else if(_networkManager.transport is CompositeTransport) {
-                // Look for UTPTransport inside CompositeTransport
                 var composite = _networkManager.transport as CompositeTransport;
                 foreach(var transport in composite.transports) {
                     if(transport is UTPTransport) {
@@ -108,16 +188,18 @@ namespace PurrLobby
                 }
                 
                 if(lobby.IsOwner) {
+                    // HOST INITIALIZATION: Initialize both server and client relay data
+                    // Server data: Allows remote clients to connect through relay
+                    // Client data: Allows host's client to connect to its own server in P2P mode
+                    
                     PurrLogger.Log("Initializing UTP Relay Server (for host)...", this);
-                    
-                    // Unity Relay host-client uses traditional client-server architecture, not P2P
-                    utpTransport.peerToPeer = false;
-                    
                     bool serverInit = utpTransport.InitializeRelayServer((Allocation)lobby.ServerObject);
                     PurrLogger.Log($"Relay Server initialized: {serverInit}", this);
                     
-                    // Host also needs relay client to connect to itself through relay
-                    PurrLogger.Log($"Initializing UTP Relay Client for host with JoinCode: {lobby.Properties["JoinCode"]}", this);
+                    // CRITICAL FIX: Host needs client relay data too for P2P mode
+                    // Without this, host's client gets "Relay data is required for P2P connection" error
+                    PurrLogger.Log("Initializing UTP Relay Client for host (required for P2P mode)...", this);
+                    
                     try {
                         bool clientInit = await utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
                         PurrLogger.Log($"Relay Client initialized for host: {clientInit}", this);
@@ -127,10 +209,8 @@ namespace PurrLobby
                     }
                 }
                 else {
+                    // REMOTE CLIENT INITIALIZATION: Only needs client relay data
                     PurrLogger.Log($"Initializing UTP Relay Client with JoinCode: {lobby.Properties["JoinCode"]}", this);
-                    
-                    // Unity Relay host-client uses traditional client-server architecture, not P2P
-                    utpTransport.peerToPeer = false;
                     
                     try {
                         bool clientInit = await utpTransport.InitializeRelayClient(lobby.Properties["JoinCode"]);
@@ -141,82 +221,50 @@ namespace PurrLobby
                     }
                 }
                 
-                // Now that relay is configured, start the network
+                // Relay configuration complete - now safe to start NetworkManager
                 StartNetworkAfterRelayConfig();
             }
-#else
-            if(_networkManager.transport is UTPTransport || _networkManager.transport is CompositeTransport) {
-                //P2P Connection without relay - requires manual IP/Port configuration
-                PurrLogger.LogWarning("UTP transport detected but UTP_LOBBYRELAY is not defined. You need to manually configure the transport for direct connection or enable Unity Relay service.", this);
-            }
-#endif
         }
 
         private void StartNetworkAfterRelayConfig()
         {
-            // Prevent multiple calls if scene loads multiple times
+            // Prevent duplicate starts from multiple scene loads or concurrent calls
             if (_hasStarted)
             {
-                PurrLogger.LogWarning("StartNetworkAfterRelayConfig() called again - ignoring to prevent duplicate server/client start", this);
+                PurrLogger.LogWarning("StartNetworkAfterRelayConfig() already called - ignoring duplicate", this);
                 return;
             }
             
             if (!_networkManager || !_lobbyDataHolder || !_lobbyDataHolder.CurrentLobby.IsValid)
                 return;
 
-            // Note: NetworkManager remains disabled to prevent its Start() from auto-executing
-            // We can still call StartServer/StartClient methods on disabled components
-
             _hasStarted = true;
+            
+            // CRITICAL FIX: Re-enable NetworkManager now that relay is fully configured
+            // This allows NetworkManager.Start() to run with properly initialized relay data
+            _networkManager.enabled = true;
 
             if(_lobbyDataHolder.CurrentLobby.IsOwner)
             {
-                PurrLogger.Log("Starting as Host (Server + Client through relay)", this);
-                // Start server first, then client after a delay
-                _networkManager.StartServer();
-                StartCoroutine(StartHostClient());
+                // HOST: Start as host with P2P mode enabled
+                // - Server listens through relay for remote clients
+                // - Host's client uses P2P mode for in-process communication with its own server
+                // - P2P mode must stay ENABLED for host
+                PurrLogger.Log("Starting as Host", this);
+                _networkManager.StartHost();
             }
             else
             {
+                // REMOTE CLIENT: Connect to host through relay
                 PurrLogger.Log("Starting as Client", this);
                 StartCoroutine(StartClient());
             }
         }
-
-        private IEnumerator StartHostClient()
-        {
-            // Give server time to fully initialize before client connects
-            yield return new WaitForSeconds(2f);
-            PurrLogger.Log("Starting host's client connection...", this);
-            
-            // Verify relay data is set
-            var transport = _networkManager.GetComponent<UTPTransport>();
-            if (transport != null)
-            {
-                PurrLogger.Log($"peerToPeer flag: {transport.peerToPeer}", this);
-                
-                var relayClientDataField = transport.GetType().GetField("_relayClientData", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (relayClientDataField != null)
-                {
-                    var relayData = relayClientDataField.GetValue(transport);
-                    PurrLogger.Log($"RelayClientData before StartClient: {(relayData != null ? "SET" : "NULL")}", this);
-                }
-                
-                var relayServerDataField = transport.GetType().GetField("_relayServerData", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (relayServerDataField != null)
-                {
-                    var relayServerData = relayServerDataField.GetValue(transport);
-                    PurrLogger.Log($"RelayServerData: {(relayServerData != null ? "SET" : "NULL")}", this);
-                }
-            }
-            
-            _networkManager.StartClient();
-        }
+#endif
 
         private IEnumerator StartClient()
         {
+            // Brief delay to ensure server is fully listening before client connects
             yield return new WaitForSeconds(1f);
             _networkManager.StartClient();
         }
